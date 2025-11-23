@@ -3,7 +3,7 @@ name: Docker build and ACR push
 on:
   push:
     branches:
-      - "feature/**"
+      - "feature**"
 
 jobs:
   build-and-push:
