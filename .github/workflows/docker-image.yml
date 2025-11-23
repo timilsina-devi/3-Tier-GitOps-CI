@@ -29,7 +29,8 @@ jobs:
       # Build Docker image
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }} .
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }} ./3-Tier-gitops-ci
+
 
       # Push Docker image
       - name: Push Image
