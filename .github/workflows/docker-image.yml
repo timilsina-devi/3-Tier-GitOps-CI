@@ -38,4 +38,4 @@ jobs:
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
           echo "Docker image pushed successfully!"
-          echo "Good!"
+          echo "Good Job!"
