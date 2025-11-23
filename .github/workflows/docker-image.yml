@@ -1,10 +1,10 @@
 name: Docker Build & Push to ACR
 
-# Give permissions needed for GitHub Actions
+# ←←← ADD THIS LINE (this is the fix for the id-token error)
 permissions:
   contents: read
+  id-token: write          # This fixes "Failed to fetch federated token"
 
-# Trigger workflow on feature branches
 on:
   push:
     branches:
@@ -13,33 +13,27 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Login to Azure using Service Principal + Secret
+      # ←←← ONLY CHANGE THESE 4 LINES (remove auth-type and client-secret, add subscription-id)
       - name: Azure CLI Login
         uses: azure/login@v2
         with:
-          auth-type: SERVICE_PRINCIPAL
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          allow-no-subscriptions: true
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}   # ← add this
+          # ← remove auth-type and client-secret entirely
 
-      # Login to ACR
       - name: Azure Container Registry Login
         run: |
           az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
 
-      # Build Docker image from project folder
       - name: Build Docker Image
         run: |
           docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
 
-      # Push Docker image to ACR
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
