@@ -1,5 +1,8 @@
 name: Docker build and ACR push
 
+permissions:
+  id-token: write
+  contents: read
 on:
   push:
     branches:
