@@ -1,42 +1,37 @@
-# This is a basic workflow to help you get started with Actions
+name: Build & Push to ACR
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - "feature/**"
 
-permissions:
-  contents: write # needed for committing to CD repo if using GITHUB_TOKEN
-  
-env:
-  $IMAGE_TAG: ${{ github.sha }}
-  
-  # Allows you to run this workflow manually from the Actions tab
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build-and-push:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      # Login to Azure using App Registration + Secret
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Login to ACR
+      - name: ACR Login
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
+
+      # Build Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }} .
+
+      # Push Docker image
+      - name: Push Image
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }}
