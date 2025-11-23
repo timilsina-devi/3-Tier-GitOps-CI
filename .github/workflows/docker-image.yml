@@ -35,3 +35,4 @@ jobs:
       - name: Push Image
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }}
+          echo "pushed"
