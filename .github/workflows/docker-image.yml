@@ -1,44 +1,46 @@
-name: Docker build and ACR push
+name: Docker Build & Push to ACR
 
+# Give permissions needed for GitHub Actions
 permissions:
-  id-token: write
   contents: read
+
+# Trigger workflow on feature branches
 on:
   push:
     branches:
-      - "feature**"
+      - "feature*"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Login to Azure using App Registration + Secret
+      # Login to Azure using Service Principal + Secret
       - name: Azure CLI Login
         uses: azure/login@v2
         with:
-          auth-type: service_principal
+          auth-type: service-principal
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           allow-no-subscriptions: true
 
       # Login to ACR
-      - name: ACR Login
+      - name: Azure Container Registry Login
         run: |
           az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
 
-      # Build Docker image
+      # Build Docker image from project folder
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }} ./3-Tier-gitops-ci
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
 
-
-      # Push Docker image
-      - name: Push Image
+      # Push Docker image to ACR
+      - name: Push Docker Image
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/hello-world:${{ github.sha }}
-          echo "pushed"
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
+          echo "Docker image pushed successfully!"
