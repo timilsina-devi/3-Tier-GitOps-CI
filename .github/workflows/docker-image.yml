@@ -98,3 +98,11 @@ jobs:
         azcliversion: latest
         inlineScript: |
           az account show
+
+    - name: Build Docker Image
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
+    - name: Push Docker Image
+      run: |
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
+        echo "Docker image pushed successfully!"
