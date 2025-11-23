@@ -105,11 +105,11 @@ jobs:
         inlineScript: |
           az account show
 
+        
     # 4️⃣ Build Docker image (lowercase + correct path)
     - name: Build Docker Image
       run: |
-        ls -la
-        ls -R
+        az acr login --name ${{ secrets.ACR_NAME }}
         docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} .
 
     # 5️⃣ Push Docker image
