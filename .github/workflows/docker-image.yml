@@ -83,15 +83,21 @@ on:
       - "feature*"
 
 jobs:
-
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
 
+    # 1️⃣ Checkout code so repo is not empty
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2️⃣ Login to Azure
     - uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    # 3️⃣ Verify Azure login
     - name: Azure CLI script
       uses: azure/cli@v2
       with:
@@ -99,13 +105,16 @@ jobs:
         inlineScript: |
           az account show
 
+    # 4️⃣ Build Docker image (lowercase + correct path)
     - name: Build Docker Image
       run: |
         ls -la
-        pwd
         ls -R
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-Tier-GitOps-CI:${{ github.sha }} ./3-Tier-GitOps-CI
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} .
+
+    # 5️⃣ Push Docker image
     - name: Push Docker Image
       run: |
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-Tier-GitOps-CI:${{ github.sha }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
         echo "Docker image pushed successfully!"
+
