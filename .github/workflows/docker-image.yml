@@ -103,8 +103,9 @@ jobs:
       run: |
         ls -la
         pwd
-        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
+        ls -R
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-Tier-GitOps-CI:${{ github.sha }} ./3-Tier-GitOps-CI
     - name: Push Docker Image
       run: |
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-Tier-GitOps-CI:${{ github.sha }}
         echo "Docker image pushed successfully!"
