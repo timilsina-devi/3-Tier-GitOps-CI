@@ -1,41 +1,76 @@
-name: Docker Build & Push to ACR
+# name: Docker Build & Push to ACR
 
-# ←←← ADD THIS LINE (this is the fix for the id-token error)
+# # ←←← ADD THIS LINE (this is the fix for the id-token error)
+# permissions:
+#   contents: read
+#   id-token: write          # This fixes "Failed to fetch federated token"
+
+# on:
+#   push:
+#     branches:
+#       - "feature*"
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       # ←←← ONLY CHANGE THESE 4 LINES (remove auth-type and client-secret, add subscription-id)
+#       - name: Azure CLI Login
+#         uses: azure/login@v2
+#         with:
+#           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+#           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}   # ← add this
+#           # ← remove auth-type and client-secret entirely
+
+#       - name: Azure Container Registry Login
+#         run: |
+#           az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
+
+#       - name: Build Docker Image
+#         run: |
+#           docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
+
+#       - name: Push Docker Image
+#         run: |
+#           docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
+#           echo "Docker image pushed successfully!"
+#           echo "Good Job!"
+
+name: Docker Build & Push to ACR
 permissions:
   contents: read
-  id-token: write          # This fixes "Failed to fetch federated token"
+  # Remove id-token: write (not needed for SP)
 
 on:
   push:
     branches:
       - "feature*"
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # ←←← ONLY CHANGE THESE 4 LINES (remove auth-type and client-secret, add subscription-id)
       - name: Azure CLI Login
         uses: azure/login@v2
         with:
+          auth-type: SERVICE_PRINCIPAL  # Back to basics—works every time
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}   # ← add this
-          # ← remove auth-type and client-secret entirely
-
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}  # Your original secret
+          # No allow-no-subscriptions needed with subscription-id
       - name: Azure Container Registry Login
         run: |
           az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
-
       - name: Build Docker Image
         run: |
           docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }} ./3-Tier-gitops-ci
-
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/3-tier-gitops-ci:${{ github.sha }}
           echo "Docker image pushed successfully!"
-          echo "Good Job!"
